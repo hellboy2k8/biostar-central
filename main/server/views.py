@@ -494,10 +494,13 @@ def new_answer(request, pid):
 
 def safe_context(key_name, data):
     try:
-        patt = settings.EXTERNAL_AUTHENICATION[key_name][1]
-        return patt % data
+        ext = settings.EXTERNAL_AUTHENICATION[key_name]
+        value = html.string_template(text=ext.template, data=data)
     except Exception, exc:
-        return "context error: %s" % exc
+        value = "context error: %s" % exc
+
+    value = html.sanitize(value)
+    return value
 
 @login_required(redirect_field_name='/openid/login/')
 def new_post(request, pid=0, post_type=POST_QUESTION, data=None):
@@ -510,15 +513,15 @@ def new_post(request, pid=0, post_type=POST_QUESTION, data=None):
     toplevel = (pid == 0)
     factory  = formdef.ChildContent if pid else formdef.TopLevelContent
 
-
     params = html.Params(tab='new', title="New post", toplevel=toplevel, data=data)
 
+    # check for external authentication
     extern = formdef.ExternalLogin(request.GET)
     if extern.is_valid():
-        e = extern.cleaned_data['data']
-        context = safe_context(extern.cleaned_data['name'], e)
-        tag_val = e.get("tags", "")
-        title   = e.get("title", "")
+        data = extern.cleaned_data['data']
+        context = safe_context(extern.cleaned_data['name'], data)
+        tag_val = data.get("tags", "")
+        title   = data.get("title", "")
         form = factory(initial=dict(tag_val=tag_val, context=context, title=title))
         return html.template(request, name=name, form=form, params=params)
 

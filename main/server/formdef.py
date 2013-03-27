@@ -117,9 +117,9 @@ class ExternalLogin(forms.Form):
             if name not in settings.EXTERNAL_AUTHENICATION:
                 raise Exception("unable to locate the authentication key by name")
 
-            key, patt = settings.EXTERNAL_AUTHENICATION[name]
-            data = decode(data, digest, key)
-            username = data.get("username","").strip()
+            ext = settings.EXTERNAL_AUTHENICATION[name]
+            data = decode(data, digest, ext.key)
+            username = data.get("username", "").strip()
             if not username:
                 raise Exception("username field not found in the data")
             cleaned_data['data'] = data

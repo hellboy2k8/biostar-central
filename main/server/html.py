@@ -2,7 +2,7 @@
 Html utility functions.
 """
 import re, string, mimetypes, os, json, random, hashlib,  unittest
-from django.template import RequestContext, loader
+from django.template import RequestContext, loader, Template, Context
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponsePermanentRedirect, Http404
 from django.shortcuts import render_to_response, render
@@ -196,6 +196,10 @@ def get_ip(request):
     ip  = ip1 or ip2 or '0.0.0.0'
     return ip
   
+def string_template(text, data):
+    t = Template(text)
+    c = Context(data)
+    return t.render(c)
 
 EPOCH = datetime(1970, 1, 1)
 

@@ -49,7 +49,7 @@ def request_info(request, pid):
     post = models.Post.objects.get(id=pid)
     
     params = html.Params(site_domain = settings.SITE_DOMAIN, user=user, post=post)
-    params.subject = "Your expert advice is needed at Biostar"
+    params.subject = "%s" % post.title
     
     if user.is_authenticated():
         params.display_name, score = user.profile.display_name, user.profile.score
@@ -96,9 +96,15 @@ def help_external(request, word='main'):
     "Renders a test page"
     user = request.user
 
+    key_name = "TEST-KEY"
+    key, template = "abcd", "User %(name)s is asking about %(title)s"
+
+    # this allows for live testing
+    test_ext  = settings.EXTERNAL_AUTHENICATION.get(key_name)
+
     # create a test key/value pair
-    name = "TEST-KEY"
-    key, patt = "abcd", "User %(name)s is asking about %(title)s"
+    if user.is_superuser and test_ext:
+        key = test_ext.key
 
     # prepare the data
     data = dict(display_name="Jane Doe",
@@ -113,7 +119,7 @@ def help_external(request, word='main'):
     enc, digest = formdef.encode(data, key=key)
 
     # encode into url parameters
-    store = dict(name=name, data=enc, digest=digest)
+    store = dict(name=key_name, data=enc, digest=digest)
 
     # encoding the parameters into the url to be loaded
     params = urllib.urlencode(store.items())
