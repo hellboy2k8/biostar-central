@@ -85,9 +85,9 @@ def create_post(b, author, post_type, root=None, parent=None):
     print "creating %s: %s" % (post.get_type_display(), title)
     return post
 
-def summary(filename):
+def import_mbox(fname):
 
-    mbox = mailbox.mbox(filename)
+    mbox = mailbox.mbox(fname)
     mbox = filter(valid, mbox)
     mbox = map(unpack, mbox)
 
@@ -96,7 +96,6 @@ def summary(filename):
 
     users = models.User.objects.all()
     users = dict( [(u.email, u) for u in users ])
-
 
     # create users as necessary
     for i, m in enumerate(mbox):
@@ -134,6 +133,39 @@ def summary(filename):
                 post = create_post(b=b, author=author, post_type=post_type, root=root, parent=parent)
                 posts[b.id] = post
 
+
+def update_users(fname):
+
+    patt = "user-%s"
+    store = {}
+    for line in file(fname):
+        hash, email = line.split()
+        store[email] = patt % hash
+
+    users = models.User.objects.filter(profile__type=const.USER_EXTERNAL).select_related("profile")
+    print "Updating %s users" % len(users)
+    for user in users:
+        username = store.get(user.email)
+        if username:
+            user.username = username
+            user.save()
+            print "updated %s %s " % (user.email, user.profile.display_name)
+
+
+
 if __name__ == '__main__':
-    summary("mail/import.txt")
-    #summary("mail/full.txt")
+    import optparse
+    parser = optparse.OptionParser()
+    parser.add_option("--mbox", dest="mbox", help="filename, imports a mailbox file into Biostar", default=None)
+    parser.add_option("--update", dest="update", help="updates the username/email pairs after an import", default=None)
+
+    (opts, args) = parser.parse_args()
+
+    if not(opts.mbox or opts.update):
+        parser.print_help()
+        sys.exit()
+    if opts.mbox:
+        import_mbox(opts.mbox)
+
+    if opts.update:
+        update_users(opts.update)
