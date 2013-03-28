@@ -96,6 +96,7 @@ def help_external(request, word='main'):
     "Renders a test page"
     user = request.user
 
+    test_url = ""
     key_name = "TEST-KEY"
     key, template = "abcd", "User %(name)s is asking about %(title)s"
 
@@ -105,11 +106,12 @@ def help_external(request, word='main'):
     # create a test key/value pair
     if user.is_superuser and test_ext:
         key = test_ext.key
+        test_url = test_ext.test_url
 
     # prepare the data
     data = dict(display_name="Jane Doe",
-                username="galaxy-jane2",
-                email="jane.doe@gmail.com", tags="galaxy bwa", title="How do I run bwa?",
+                username="galaxy_jane3",
+                email="test", tags="galaxy bwa", title="How do I run bwa?",
                 tool_name="Uber Convert",
                 tool_id=1,
                 tool_version="0.0.1.alpha",
@@ -130,7 +132,7 @@ def help_external(request, word='main'):
     post_url = "/x/?%s" % params
 
     # this is used inside the templates
-    params = html.Params(post_url=post_url, login_url=login_url, key=key, data=data, enc=enc, digest=digest)
+    params = html.Params(post_url=post_url, login_url=login_url, key=key, data=data, enc=enc, digest=digest, test_url=test_url)
     return html.template(request, name='help/help.external.html', params=params, user=user)
 
 def testpage(request):

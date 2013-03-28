@@ -346,7 +346,7 @@ def authorize_external_user(request, data):
 
     else:
         # create a new user
-        email = data.get("email","no-email")
+        email = data.get("email", "no-email")
         user = models.User(username=username, email=email)
         user.save()
 
