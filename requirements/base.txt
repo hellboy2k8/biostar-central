@@ -1,0 +1,11 @@
+django >1.5.4,<1.6
+django-braces
+django-taggit
+django-treebeard
+django-haystack
+django-debug-toolbar
+django-secure
+django-compressor
+django-crispy-forms
+python-dateutil
+South
